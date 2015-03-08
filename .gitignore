@@ -1,0 +1,6 @@
+dist
+.cabal-sandbox
+.cabal-sandbox.bak
+cabal.sandbox.config
+*.pyc
+Gemfile.lock
