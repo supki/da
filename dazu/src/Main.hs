@@ -1,0 +1,94 @@
+{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE QuasiQuotes #-}
+module Main (main) where
+
+import           Control.Applicative (empty)
+import           Control.Monad (unless, when)
+import           Crypto.PubKey.HashDescr (hashDescrSHA512)
+import qualified Crypto.PubKey.RSA.PKCS15 as Rsa
+import qualified Data.Aeson as Aeson
+import qualified Data.Aeson.Types as Aeson
+import qualified Data.ByteString as Strict
+import qualified Data.ByteString.Base64 as Base64
+import qualified Data.ByteString.Lazy as Lazy
+import           Data.Foldable (traverse_)
+import           Data.Text (Text)
+import qualified Data.Text.Encoding as Text
+import qualified Data.Text.IO as Text
+import qualified Network.Connection as Http
+import qualified Network.HTTP.Client as Http
+import qualified Network.HTTP.Client.TLS as Http
+import           Prelude hiding (length)
+import           System.Exit (die, exitFailure)
+import qualified System.IO as IO
+import qualified Text.Printf as IO (hPrintf)
+
+import           Config (Config, verbose, getConfig)
+import           TH (key)
+
+
+main :: IO ()
+main = runApp =<< getConfig
+
+runApp :: Config -> IO ()
+runApp cfg = do
+  url <- Http.parseUrl "https://api.random.org/json-rpc/1/invoke"
+  Http.withManager (Http.mkManagerSettings tls Nothing) $ \m -> do
+    let body = Aeson.encode cfg
+        req = url
+          { Http.method = "POST"
+          , Http.requestHeaders = [("Content-Type", "application/json-rpc")]
+          , Http.requestBody = Http.RequestBodyLBS body
+          }
+    when (verbose cfg)
+         (do debug  "request metadata: %s\n" (show req)
+             debug  "request body: %s\n" (show body))
+    res <- Http.httpLbs req m
+    when (verbose cfg)
+         (debug "response: %s\n" (show res))
+    result (Http.responseBody res)
+ where
+  debug fmt = IO.hPrintf IO.stderr ("[debug] " ++ fmt)
+  tls = Http.TLSSettingsSimple
+    { Http.settingDisableCertificateValidation = True -- <https://github.com/vincenthz/hs-tls/issues/100>
+    , Http.settingDisableSession = False
+    , Http.settingUseServerName = False
+    }
+
+result :: Lazy.ByteString -> IO ()
+result x = case Aeson.decode x of
+  Nothing -> exitFailure
+  Just Result { data_, signature } -> do
+    let (_, y) = Strict.breakSubstring "{\"method\":" (Lazy.toStrict x)
+        (z, _) = Strict.breakSubstring ",\"signature\":" y
+    traverse_ Text.putStrLn data_
+    unless (verify signature z)
+           (die "Couldn't verify the passwords really are from <random.org>")
+
+data Result = Result
+  { data_     :: [Text]
+  , signature :: Signature
+  } deriving (Show, Eq)
+
+instance Aeson.FromJSON Result where
+  parseJSON (Aeson.Object o) = do
+    r <- get "result" o
+    data_ <- get "random" r >>= get "data"
+    x <- get "signature" r
+    case fmap Signature (Base64.decode (Text.encodeUtf8 x)) of
+      Right signature -> return Result { data_, signature }
+      _ -> empty
+  parseJSON _ = empty
+
+get :: Aeson.FromJSON a => Text -> Aeson.Object -> Aeson.Parser a
+get = flip (Aeson..:)
+
+
+newtype Signature = Signature Strict.ByteString
+    deriving (Show, Eq)
+
+verify :: Signature -> Strict.ByteString -> Bool
+verify (Signature signature) xs =
+  Rsa.verify hashDescrSHA512 key xs signature
