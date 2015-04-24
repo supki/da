@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleContexts #-}
 -- | Convenient module that simplifies lives of damit users greatly
 module Damit.Route.Extra
@@ -19,7 +20,10 @@ module Damit.Route.Extra
   ) where
 
 import Data.Int (Int64, Int32, Int16, Int8)
-import Data.Word (Word, Word64, Word32, Word16, Word8)
+import Data.Word (Word64, Word32, Word16, Word8)
+#if __GLASGOW_HASKELL__ < 710
+import Data.Word (Word)
+#endif
 
 import Damit
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -23,8 +24,10 @@ module Damit.Execute.Internal
   ) where
 
 import           Control.Monad (void, (<=<))
+#if __GLASGOW_HASKELL__ < 710
 import           Data.Foldable (foldMap)
 import           Data.Monoid (Monoid(..))
+#endif
 import qualified System.Posix as Posix
 
 infix 1 .=

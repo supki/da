@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -41,15 +42,23 @@ module Damit.Route
   , inputs
   ) where
 
-import Control.Applicative (Applicative(..), Alternative(empty, (<|>)), (<$), liftA2)
+#if __GLASGOW_HASKELL__ < 710
+import Control.Applicative (Applicative(..), (<|>)))
+#endif
+import Control.Applicative (Alternative(empty, (<|>)), liftA2)
 import Control.Monad (MonadPlus(..), liftM, liftM2, guard)
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.Trans.Class (MonadTrans(..))
 import Data.Functor.Identity (Identity(..))
 import Data.Int (Int8, Int16, Int32, Int64)
 import Data.String (IsString(..))
+#if __GLASGOW_HASKELL__ < 710
 import Data.Traversable (traverse)
-import Data.Word (Word, Word8, Word16, Word32, Word64)
+#endif
+import Data.Word (Word8, Word16, Word32, Word64)
+#if __GLASGOW_HASKELL__ < 710
+import Data.Word (Word)
+#endif
 import Text.Read (readMaybe)
 
 infixl 4 ** -- same fixity as '(<*>)', '(<*)', and '(*>)'

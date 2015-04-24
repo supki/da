@@ -69,7 +69,7 @@ main = do
                          (env ["TERM" .= "screen-256color"])))
 
       , with ("dive" *> "work" *> some string) $ \session ->
-          pure (hops ["ce837848", "d378e6d3"] (run "damit" (args session)))
+          pure (hop "737dd1bc" mempty (run "damit" (args session)))
 
       , with ("dive" *> "ko" *> optional string) $ \bucket ->
           pure (maybe (hop "kolyskovi" mempty (myTmux "main" mempty))

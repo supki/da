@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NamedFieldPuns #-}
@@ -11,7 +12,9 @@ module Damit.Execute.Tmux
   , socket
   ) where
 
+#if __GLASGOW_HASKELL__ < 710
 import Data.Foldable (foldMap)
+#endif
 import Data.Monoid ((<>))
 import System.FilePath ((</>))
 import Prelude hiding (mod)
