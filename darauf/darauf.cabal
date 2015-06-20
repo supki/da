@@ -1,0 +1,59 @@
+name:                darauf
+version:             0.1.0
+synopsis:            Utility for displaying the status of Nix channels.
+description:
+  See README.markdown
+homepage:            https://github.com/supki/da
+license:             BSD2
+license-file:        LICENSE
+author:              Matvey Aksenov
+maintainer:          matvey.aksenov@gmail.com
+copyright:           Matvey Aksenov 2015
+category:            Network
+build-type:          Simple
+cabal-version:       >= 1.10
+extra-source-files:
+  README.markdown
+
+source-repository head
+  type:     git
+  location: https://github.com/supki/da
+
+library
+  default-language:
+    Haskell2010
+  build-depends:
+      base >= 4.8 && < 5
+    , bytestring
+    , conduit
+    , conduit-extra
+    , directory
+    , envparse
+    , filepath
+    , http-client
+    , http-client-tls
+    , lens
+    , resourcet
+    , text
+    , time
+    , transformers
+    , xml-html-conduit-lens
+  hs-source-dirs:
+    src
+  exposed-modules:
+    App
+    Channel
+    Config
+    Pretty
+    Status
+
+executable darauf
+  default-language:
+    Haskell2010
+  build-depends:
+      base >= 4.8 && < 5
+    , darauf
+  hs-source-dirs:
+    driver
+  main-is:
+    Main.hs
