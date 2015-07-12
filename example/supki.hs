@@ -2,10 +2,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
 
-import           Control.Applicative (Applicative(..), (<$>), some, optional)
+import           Control.Applicative ((<|>), some, optional)
 import           Control.Monad (when, unless)
-import           Data.Foldable (asum, foldMap)
-import           Data.Monoid (Monoid(..))
+import           Data.Foldable (asum)
 import           Env (header, switch, help)
 import qualified Env
 import           Prelude hiding ((**))
@@ -34,7 +33,7 @@ main = do
   conf <- getConf
   res  <- Damit.route xs $ do
     name <- input
-    asum $
+    asum
       [ with ("git" *> fmap (combine "git") string) $ \repo -> do
           home <- D.getHomeDirectory
           y    <- D.doesDirectoryExist repo
@@ -73,13 +72,16 @@ main = do
 
       , with ("dive" *> "ko" *> optional string) $ \bucket ->
           pure (maybe (hop "kolyskovi" mempty (myTmux "main" mempty))
-                      (\b -> (hop "kolyskovi" mempty (myTmux b (directory ("work" </> b)))))
+                      (\b -> hop "kolyskovi" mempty (myTmux b (directory ("work" </> b))))
                       bucket)
 
       , with_ ("dive" *> "mail") $
           pure (run "dive-into-mail" mempty)
 
-      , with_ pop $ do
+      , with ("package.nix" *> (string <|> pure ".")) $ \dir ->
+          pure (run "nix-shell" (args ["-p", "cabal2nix", "--run", "cabal2nix " ++ dir ++ " > package.nix"]))
+
+      , with_ pop $
           pure (myTmux name mempty)
       ]
   case res of
@@ -98,6 +100,7 @@ input = fmap unwords inputs
 
 hops :: [String] -> Command -> Command
 hops hs c = foldr (\h -> hop h mempty) c hs
+{-# ANN hops ("HLint: ignore Avoid lambda" :: String) #-}
 
 myTmux :: String -> Mod TmuxOptions -> Command
 #ifdef __CUSTOM_SOCKET__

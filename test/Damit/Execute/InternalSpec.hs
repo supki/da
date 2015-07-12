@@ -1,6 +1,5 @@
 module Damit.Execute.InternalSpec (spec) where
 
-import Data.Monoid (mempty)
 import Test.Hspec
 
 import Damit.Execute.Internal
