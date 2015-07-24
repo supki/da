@@ -59,7 +59,8 @@ main = do
       , with ("tt" *> string ** optional string) $ \(host, l) ->
           pure (hop (ns "tt" host)
                     (foldMap login l)
-                    (run "$SHELL" mempty))
+                    (run "$SHELL"
+                         (args ["-l"])))
 
       , with ("al" *> string ** optional string) $ \(host, l) ->
           pure (hop (ns "al" host)
