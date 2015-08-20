@@ -12,6 +12,7 @@ import qualified System.Directory as D
 import           System.Environment (getArgs)
 import           System.Exit (exitFailure)
 import           System.FilePath (combine, (</>))
+import qualified System.Process as P
 
 import           Damit
 import           Damit.Route.Extra (int, string)
@@ -36,8 +37,12 @@ main = do
     asum
       [ with ("git" *> fmap (combine "git") string) $ \repo -> do
           home <- D.getHomeDirectory
-          y    <- D.doesDirectoryExist repo
-          return (myTmux name (directory (home </> (if y then repo else "git"))))
+          let repoDir = home </> repo
+          exists <- D.doesDirectoryExist repoDir
+          unless exists
+                 (do D.createDirectory repoDir
+                     P.callProcess "git" ["init", repoDir])
+          return (myTmux name (directory repoDir))
 
       , with ("svn" *> fmap (combine "svn") string) $ \repo -> do
           home <- D.getHomeDirectory
