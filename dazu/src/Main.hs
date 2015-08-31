@@ -1,7 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE QuasiQuotes #-}
 module Main (main) where
 
 import           Control.Applicative (empty)
@@ -17,7 +15,6 @@ import           Data.Foldable (traverse_)
 import           Data.Text (Text)
 import qualified Data.Text.Encoding as Text
 import qualified Data.Text.IO as Text
-import qualified Network.Connection as Http
 import qualified Network.HTTP.Client as Http
 import qualified Network.HTTP.Client.TLS as Http
 import           Prelude hiding (length)
@@ -35,7 +32,7 @@ main = runApp =<< getConfig
 runApp :: Config -> IO ()
 runApp cfg = do
   url <- Http.parseUrl "https://api.random.org/json-rpc/1/invoke"
-  Http.withManager (Http.mkManagerSettings tls Nothing) $ \m -> do
+  Http.withManager Http.tlsManagerSettings $ \m -> do
     let body = Aeson.encode cfg
         req = url
           { Http.method = "POST"
@@ -51,11 +48,6 @@ runApp cfg = do
     result (Http.responseBody res)
  where
   debug fmt = IO.hPrintf IO.stderr ("[debug] " ++ fmt)
-  tls = Http.TLSSettingsSimple
-    { Http.settingDisableCertificateValidation = True -- <https://github.com/vincenthz/hs-tls/issues/100>
-    , Http.settingDisableSession = False
-    , Http.settingUseServerName = False
-    }
 
 result :: Lazy.ByteString -> IO ()
 result x = case Aeson.decode x of
