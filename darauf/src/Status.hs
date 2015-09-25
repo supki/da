@@ -35,7 +35,7 @@ get = mapOutputMaybe (uncurry parse) (CL.mapM (liftIO . go))
  where
   go channel@Channel { channelUrl } =
     fmap (\res -> (channel, Http.responseBody res))
-         (Http.withManager Http.tlsManagerSettings (Http.httpLbs channelUrl))
+         (Http.httpLbs channelUrl =<< Http.newManager Http.tlsManagerSettings)
 
 parse :: Channel -> Html -> Maybe Status
 parse statusChannel raw = do
