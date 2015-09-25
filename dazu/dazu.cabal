@@ -28,8 +28,7 @@ executable dazu
     , base                 >= 4.8 && < 5
     , base64-bytestring    >= 1.0
     , bytestring
-    , crypto-pubkey-types  >= 0.4
-    , crypto-pubkey        >= 0.2
+    , cryptonite           >= 0.7
     , envparse             >= 0.2
     , http-client          >= 0.4
     , http-client-tls      >= 0.2

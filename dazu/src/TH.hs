@@ -5,7 +5,7 @@ module TH
   ( key
   ) where
 
-import Crypto.Types.PubKey.RSA (PublicKey(PublicKey, public_size, public_n, public_e))
+import Crypto.PubKey.RSA (PublicKey(PublicKey, public_size, public_n, public_e))
 import Data.PEM (PEM(PEM, pemContent), pemParseBS)
 import Data.X509 (PubKey(PubKeyRSA), certPubKey, getCertificate, decodeSignedCertificate)
 

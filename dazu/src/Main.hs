@@ -4,7 +4,7 @@ module Main (main) where
 
 import           Control.Applicative (empty)
 import           Control.Monad (unless, when)
-import           Crypto.PubKey.HashDescr (hashDescrSHA512)
+import           Crypto.Hash.Algorithms (SHA512(SHA512))
 import qualified Crypto.PubKey.RSA.PKCS15 as Rsa
 import qualified Data.Aeson as Aeson
 import qualified Data.Aeson.Types as Aeson
@@ -32,20 +32,20 @@ main = runApp =<< getConfig
 runApp :: Config -> IO ()
 runApp cfg = do
   url <- Http.parseUrl "https://api.random.org/json-rpc/1/invoke"
-  Http.withManager Http.tlsManagerSettings $ \m -> do
-    let body = Aeson.encode cfg
-        req = url
-          { Http.method = "POST"
-          , Http.requestHeaders = [("Content-Type", "application/json-rpc")]
-          , Http.requestBody = Http.RequestBodyLBS body
-          }
-    when (verbose cfg)
-         (do debug  "request metadata: %s\n" (show req)
-             debug  "request body: %s\n" (show body))
-    res <- Http.httpLbs req m
-    when (verbose cfg)
-         (debug "response: %s\n" (show res))
-    result (Http.responseBody res)
+  man <- Http.newManager Http.tlsManagerSettings
+  let body = Aeson.encode cfg
+      req = url
+        { Http.method = "POST"
+        , Http.requestHeaders = [("Content-Type", "application/json-rpc")]
+        , Http.requestBody = Http.RequestBodyLBS body
+        }
+  when (verbose cfg)
+       (do debug  "request metadata: %s\n" (show req)
+           debug  "request body: %s\n" (show body))
+  res <- Http.httpLbs req man
+  when (verbose cfg)
+       (debug "response: %s\n" (show res))
+  result (Http.responseBody res)
  where
   debug fmt = IO.hPrintf IO.stderr ("[debug] " ++ fmt)
 
@@ -83,4 +83,4 @@ newtype Signature = Signature Strict.ByteString
 
 verify :: Signature -> Strict.ByteString -> Bool
 verify (Signature signature) xs =
-  Rsa.verify hashDescrSHA512 key xs signature
+  Rsa.verify (Just SHA512) key xs signature
