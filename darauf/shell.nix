@@ -1,17 +1,23 @@
-{ nixpkgs ? import <nixpkgs> {}, compiler ? "ghc7102" }: let
+{ nixpkgs ? import <nixpkgs> {}, compiler ? "ghc7103" }: let
   inherit (nixpkgs) pkgs;
+  haskell = pkgs.haskell.packages.${compiler};
+
   ghc = pkgs.haskell.packages.${compiler}.ghcWithPackages(ps: [
     ps.hdevtools ps.doctest ps.hspec-discover ps.hlint ps.ghc-mod
   ]);
-  cabal-install = pkgs.haskell.packages.${compiler}.cabal-install;
-  pkg = (import ./default.nix { inherit nixpkgs compiler; });
+
+  this = (import ./default.nix { inherit nixpkgs compiler; });
 in
   pkgs.stdenv.mkDerivation rec {
-    name = pkg.pname;
-    buildInputs = [ ghc cabal-install ] ++ pkg.env.buildInputs;
+    name = this.pname;
+    buildInputs = [
+      ghc
+      haskell.cabal-install
+
+      pkgs.moreutils
+    ] ++ this.env.buildInputs;
     shellHook = ''
-      ${pkg.env.shellHook}
-      export IN_WHICH_NIX_SHELL=${name}
-      cabal configure --package-db=$NIX_GHC_LIBDIR/package.conf.d
+      ${this.env.shellHook}
+      chronic cabal configure --package-db=$NIX_GHC_LIBDIR/package.conf.d --enable-tests
     '';
   }

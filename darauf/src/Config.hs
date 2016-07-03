@@ -16,7 +16,7 @@ data Config = Config
 
 get :: IO Config
 get = do
-  nixChannels <- Env.parse (header "darauf" <> desc "Utility for querying Nix channels' status") $
+  nixChannels <- Env.parse (header "darauf" . desc "Utility for querying Nix channels' status") $
     var (fmap pure . str)
         "DARAUF_NIX_CHANNELS"
         (help "Path to the nix-channels file" <> def defaultNixChannels <> helpDef (pure "~/.nix-channels"))

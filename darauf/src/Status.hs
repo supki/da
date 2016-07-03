@@ -71,4 +71,4 @@ parseUpdate :: [Text] -> Maybe Time.UTCTime
 parseUpdate = maximumOf (folded.folding parseTime)
 
 parseTime :: Text -> Maybe Time.UTCTime
-parseTime = Time.parseTimeM True Time.defaultTimeLocale "%d-%b-%Y %H:%M" . Text.unpack
+parseTime = Time.parseTimeM True Time.defaultTimeLocale "%Y-%m-%d %H:%M" . Text.unpack
