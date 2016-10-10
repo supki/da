@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+declare -r git_root=$HOME/git
+declare -r svn_root=$HOME/svn
+
+
+main() {
+	case ${1:-} in
+		git)
+			declare -r dir=$git_root/$2
+
+			if ! [ -d "$dir" ]; then
+				mkdir -p "$dir"
+				git init "$dir"
+			fi
+			exec tmux new-session -AD -s "$dir" -c "$dir"
+			;;
+
+		svn)
+			declare -r dir=$svn_root/$2
+
+			if [ -d "$dir" ]; then
+				exec tmux new-session -AD -s "$dir" -c "$dir"
+			else
+				exec tmux new-session -AD -s "$dir" -c "$svn_root"
+			fi
+			;;
+
+		play)
+			declare -r dir=~/playground/$2
+
+			mkdir -p "$dir"
+			cd "$dir"
+			exec tmux new-session -AD -s "$dir" -c "$dir"
+			;;
+
+		tt)
+			declare -r host=$2
+			declare -r login=$3
+
+			if [ "$login" ]; then
+				# shellcheck disable=SC2016
+				exec ssh "tt:${host}" -l "$login" -t '$SHELL -l'
+			else
+				# shellcheck disable=SC2016
+				exec ssh "tt:${host}" -t '$SHELL -l'
+			fi
+			;;
+
+		wfh)
+			shift
+
+			# shellcheck disable=SC2029
+			exec ssh 737dd1bc -t damit "$@"
+			;;
+
+		be)
+			declare -r bucket=${2:-}
+
+			if [ "$bucket" ]; then
+				exec ssh be -t tmux new-session -AD -s "$bucket" -c "work/${bucket}"
+			else
+				exec ssh be -t tmux new-session -AD -s 'main'
+			fi
+			;;
+	esac
+
+	error "I don't know how to execute \`$*', sorry!"
+}
+
+error() {
+	echo "$@" >&2
+	exit
+}
+
+main "$@"
