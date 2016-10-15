@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+declare -r NIX_CHANNELS=${NIX_CHANNELS:-"${HOME}/.nix-channels"}
+
+
+main() {
+	declare url name
+
+	while read -r url name; do
+		channel-data "$url" | parse "$name"
+	done < "$NIX_CHANNELS"
+}
+
+channel-data() {
+	curl --silent --location "$url"
+}
+
+parse() {
+	declare -r name=$1
+
+	xmlstarlet select --text --template \
+		--output "‘${name}’ points to " --copy-of "substring-after(//h1, 'release ')" --output ' ' --copy-of '//p//text()' --nl |
+		sed 's/Released/released/'
+}
+
+main "$@"
