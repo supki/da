@@ -35,7 +35,6 @@ library
     , lens
     , resourcet
     , text
-    , time
     , transformers
     , xml-html-conduit-lens
   hs-source-dirs:

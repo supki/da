@@ -1,5 +1,6 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RecordWildCards #-}
 module Channel
   ( Channel(..)
   , Url
@@ -19,8 +20,8 @@ import qualified Network.HTTP.Client as Http
 type Url = Http.Request
 
 data Channel = Channel
-  { channelUrl  :: Url
-  , channelName :: Text
+  { channelUrl  :: !Url
+  , channelName :: !Text
   } deriving (Show)
 
 parse :: MonadResource m => FilePath -> Producer m Channel
@@ -29,10 +30,10 @@ parse fp =
 
 parseLine :: Text -> Maybe Channel
 parseLine str = do
-  [url, channelName]
-             <- pure (Text.words str)
+  let [url, channelName] = Text.words str
   channelUrl <- parseUrl url
-  return Channel { channelUrl, channelName }
+  return Channel {..}
 
 parseUrl :: Text -> Maybe Url
-parseUrl = Http.parseUrl . Text.unpack
+parseUrl =
+  Http.parseRequest . Text.unpack
