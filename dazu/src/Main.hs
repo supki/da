@@ -3,7 +3,7 @@
 module Main (main) where
 
 import           Control.Applicative (empty)
-import           Control.Monad (unless, when)
+import           Control.Monad (unless)
 import           Crypto.Hash.Algorithms (SHA512(SHA512))
 import qualified Crypto.PubKey.RSA.PKCS15 as Rsa
 import qualified Data.Aeson as Aeson
@@ -19,10 +19,8 @@ import qualified Network.HTTP.Client as Http
 import qualified Network.HTTP.Client.TLS as Http
 import           Prelude hiding (length)
 import           System.Exit (die, exitFailure)
-import qualified System.IO as IO
-import qualified Text.Printf as IO (hPrintf)
 
-import           Config (Config, verbose, getConfig)
+import           Config (Config, getConfig)
 import           TH (key)
 
 
@@ -31,7 +29,7 @@ main = runApp =<< getConfig
 
 runApp :: Config -> IO ()
 runApp cfg = do
-  url <- Http.parseUrl "https://api.random.org/json-rpc/1/invoke"
+  url <- Http.parseUrlThrow "https://api.random.org/json-rpc/1/invoke"
   man <- Http.newManager Http.tlsManagerSettings
   let body = Aeson.encode cfg
       req = url
@@ -39,15 +37,8 @@ runApp cfg = do
         , Http.requestHeaders = [("Content-Type", "application/json-rpc")]
         , Http.requestBody = Http.RequestBodyLBS body
         }
-  when (verbose cfg)
-       (do debug  "request metadata: %s\n" (show req)
-           debug  "request body: %s\n" (show body))
   res <- Http.httpLbs req man
-  when (verbose cfg)
-       (debug "response: %s\n" (show res))
   result (Http.responseBody res)
- where
-  debug fmt = IO.hPrintf IO.stderr ("[debug] " ++ fmt)
 
 result :: Lazy.ByteString -> IO ()
 result x = case Aeson.decode x of
