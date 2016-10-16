@@ -15,16 +15,16 @@ main() {
 				mkdir -p "$dir"
 				git init "$dir"
 			fi
-			exec tmux new-session -AD -s "$dir" -c "$dir"
+			exec tmux new-session -AD -s "$*" -c "$dir"
 			;;
 
 		svn)
 			declare -r dir=$svn_root/$2
 
 			if [ -d "$dir" ]; then
-				exec tmux new-session -AD -s "$dir" -c "$dir"
+				exec tmux new-session -AD -s "$*" -c "$dir"
 			else
-				exec tmux new-session -AD -s "$dir" -c "$svn_root"
+				exec tmux new-session -AD -s "$*" -c "$svn_root"
 			fi
 			;;
 
@@ -33,7 +33,7 @@ main() {
 
 			mkdir -p "$dir"
 			cd "$dir"
-			exec tmux new-session -AD -s "$dir" -c "$dir"
+			exec tmux new-session -AD -s "$*" -c "$dir"
 			;;
 
 		tt)
