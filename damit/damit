@@ -67,7 +67,9 @@ main() {
 			;;
 	esac
 
-	error "I don't know how to execute \`$*', sorry!"
+	notify-send --icon error \
+		 "$(basename "${BASH_SOURCE[0]}")" \
+		 "I don't know how to execute \`$*', sorry!"
 }
 
 error() {
