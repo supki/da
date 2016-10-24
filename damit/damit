@@ -36,16 +36,16 @@ main() {
 			exec tmux new-session -AD -s "$*" -c "$dir"
 			;;
 
-		tt)
+		.)
 			declare -r host=$2
-			declare -r login=$3
+			declare -r login=${3:-}
 
 			if [ "$login" ]; then
 				# shellcheck disable=SC2016
-				exec ssh "tt:${host}" -l "$login" -t '$SHELL -l'
+				exec ssh "$host" -l "$login" -t '$SHELL -l'
 			else
 				# shellcheck disable=SC2016
-				exec ssh "tt:${host}" -t '$SHELL -l'
+				exec ssh "$host" -t '$SHELL -l'
 			fi
 			;;
 
