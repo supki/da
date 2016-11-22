@@ -8,6 +8,7 @@ static int BRIGHTNESS_MIN = 10; // I can't see shit with anything less than 10, 
 static int BRIGHTNESS_MAX = 100; // While the actual maximum value is 93-fucking-7, 100 is more than enough to melt the eyes.
 
 static error_t parse_opt(int key, char* arg, struct argp_state* state);
+static int get_brightness(const char* path);
 static int set_brightness(const char* path, int value);
 static void close_file(FILE**);
 
@@ -29,7 +30,11 @@ int main(int argc, char** argv) {
 
   argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
-  return set_brightness(arguments.path, arguments.value);
+  if (arguments.value) {
+    return set_brightness(arguments.path, arguments.value);
+  } else {
+    return get_brightness(arguments.path);
+  }
 }
 
 static error_t parse_opt(int key, char* arg, struct argp_state* state) {
@@ -54,17 +59,37 @@ static error_t parse_opt(int key, char* arg, struct argp_state* state) {
       }
       break;
 
-    case ARGP_KEY_END:
-      if (state->arg_num < 1) {
-        argp_error(state, "Brightness is undefined.");
-      }
-      break;
-
     default:
        return ARGP_ERR_UNKNOWN;
   }
 
   return 0;
+}
+
+static int get_brightness(const char* path) {
+  __auto_type h __attribute__((cleanup(close_file))) = fopen(path, "r");
+
+  if (!h) {
+    fprintf(stderr, "Couldn't open %s: %s.\n", path, strerror(errno));
+
+    return EXIT_FAILURE;
+  } else {
+    __auto_type CHUNK = 4096;
+    char buf[CHUNK];
+    size_t nread;
+
+    while ((nread = fread(buf, 1, sizeof(buf), h)) > 0) {
+      fwrite(buf, 1, nread, stdout);
+    }
+
+    if (ferror(h)) {
+      fprintf(stderr, "Couldn't read from %s: %s.\n", path, strerror(errno));
+
+      return EXIT_FAILURE;
+    }
+  }
+
+  return EXIT_SUCCESS;
 }
 
 static int set_brightness(const char* path, int value) {
@@ -75,9 +100,9 @@ static int set_brightness(const char* path, int value) {
 
     return EXIT_FAILURE;
   } else {
-    __auto_type written = fprintf(h, "%d\n", value);
+    __auto_type nwritten = fprintf(h, "%d\n", value);
 
-    if (!written) {
+    if (!nwritten) {
       fprintf(stderr, "Couldn't write to %s: %s.\n", path, strerror(errno));
 
       return EXIT_FAILURE;
