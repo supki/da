@@ -5,7 +5,7 @@
 
 static const char* BRIGHTNESS_DEFAULT_PATH = "/sys/class/backlight/intel_backlight/brightness";
 static int BRIGHTNESS_MIN = 10; // I can't see shit with anything less than 10, 0 is simply a black screen.
-static int BRIGHTNESS_MAX = 100; // While the actual maximum value is 93-fucking-7, 100 is more than enough to melt the eyes.
+static int BRIGHTNESS_MAX = 200; // While the actual maximum value is 93-fucking-7, 100 is more than enough to melt the eyes.
 
 static error_t parse_opt(int key, char* arg, struct argp_state* state);
 static int get_brightness(const char* path);
