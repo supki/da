@@ -4,3 +4,4 @@ dist
 cabal.sandbox.config
 *.pyc
 Gemfile.lock
+.stack-work

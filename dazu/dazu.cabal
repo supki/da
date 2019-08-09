@@ -52,6 +52,7 @@ executable dazu
     Main.hs
   other-modules:
     Config
+    TH
     Meta_dazu
   ghc-options:
     -Wall

@@ -3,14 +3,14 @@ module Main (main) where
 
 import qualified Data.Char as Char
 import qualified Data.List as List
-import           Data.Version (showVersion)
-import           Distribution.Package (PackageIdentifier(..), PackageName(..))
+import           Distribution.Package (PackageIdentifier(..), unPackageName)
 import           Distribution.PackageDescription (PackageDescription(package))
+import           Distribution.Pretty (prettyShow)
 import           Distribution.Simple (defaultMainWithHooks, simpleUserHooks, buildHook)
-import           Distribution.Simple.BuildPaths (autogenModulesDir)
+import           Distribution.Simple.BuildPaths (autogenPackageModulesDir)
 import           Distribution.Simple.LocalBuildInfo (LocalBuildInfo, localPkgDescr)
 import           Distribution.Simple.Setup (BuildFlags(buildVerbosity), fromFlag)
-import           Distribution.Simple.Utils (notice, rewriteFile)
+import           Distribution.Simple.Utils (notice, rewriteFileEx)
 import           System.Directory (createDirectoryIfMissing)
 import           System.FilePath ((</>), (<.>))
 import           System.IO.Error (catchIOError)
@@ -25,14 +25,14 @@ main = defaultMainWithHooks simpleUserHooks
 generateMeta :: LocalBuildInfo -> BuildFlags -> IO ()
 generateMeta lbi bf = let
     verbosity = fromFlag (buildVerbosity bf)
-    PackageIdentifier {pkgName = PackageName {unPackageName}, pkgVersion} = package (localPkgDescr lbi)
-    metaName = "Meta_" ++ unPackageName
+    PackageIdentifier {pkgName, pkgVersion} = package (localPkgDescr lbi)
+    metaName = "Meta_" ++ replace '-' '_' (unPackageName pkgName)
     metaPath = autogen </> metaName <.> "hs"
   in do
     hash <- gitHash
     createDirectoryIfMissing True autogen
     notice verbosity ("Generating " ++ metaPath ++ " ...")
-    rewriteFile metaPath (unlines
+    rewriteFileEx verbosity metaPath (unlines
       [ "module " ++ metaName
       , "  ( name"
       , "  , version"
@@ -42,16 +42,18 @@ generateMeta lbi bf = let
       , "import Data.String (IsString(fromString))"
       , ""
       , "name :: IsString str => str"
-      , "name = fromString " ++ show unPackageName
+      , "name = fromString " ++ show (unPackageName pkgName)
       , ""
       , "version :: IsString str => str"
-      , "version = fromString " ++ show (showVersion pkgVersion)
+      , "version = fromString " ++ show (prettyShow pkgVersion)
       , ""
       , "hash :: IsString str => str"
       , "hash = fromString " ++ show hash
       ])
  where
-  autogen = autogenModulesDir lbi
+  autogen = autogenPackageModulesDir lbi
+  replace x y =
+    map (\c -> if c == x then y else c)
 
 gitHash :: IO String
 gitHash =

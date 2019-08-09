@@ -29,12 +29,12 @@ main = runApp =<< getConfig
 
 runApp :: Config -> IO ()
 runApp cfg = do
-  url <- Http.parseUrlThrow "https://api.random.org/json-rpc/1/invoke"
+  url <- Http.parseUrlThrow "https://api.random.org/json-rpc/2/invoke"
   man <- Http.newManager Http.tlsManagerSettings
   let body = Aeson.encode cfg
       req = url
         { Http.method = "POST"
-        , Http.requestHeaders = [("Content-Type", "application/json-rpc")]
+        , Http.requestHeaders = [("Content-Type", "application/json")]
         , Http.requestBody = Http.RequestBodyLBS body
         }
   res <- Http.httpLbs req man
