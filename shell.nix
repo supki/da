@@ -1,5 +1,5 @@
 { pkgs ? import <nixpkgs> { }
-, ghc ? pkgs.haskell.compiler.ghc8107
+, ghc ? pkgs.haskell.compiler.ghc902
 , stack ? pkgs.stack
 }:
 
