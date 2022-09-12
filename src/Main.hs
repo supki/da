@@ -6,8 +6,8 @@ import           Control.Applicative (empty)
 import           Control.Monad (unless)
 import           Crypto.Hash.Algorithms (SHA512(SHA512))
 import qualified Crypto.PubKey.RSA.PKCS15 as Rsa
+import           Data.Aeson ((.:))
 import qualified Data.Aeson as Aeson
-import qualified Data.Aeson.Types as Aeson
 import qualified Data.ByteString as Strict
 import qualified Data.ByteString.Base64 as Base64
 import qualified Data.ByteString.Lazy as Lazy
@@ -57,17 +57,13 @@ data Result = Result
 
 instance Aeson.FromJSON Result where
   parseJSON (Aeson.Object o) = do
-    r <- get "result" o
-    data_ <- get "random" r >>= get "data"
-    x <- get "signature" r
+    r <- o .: "result"
+    data_ <- (r .: "random") >>= \o' -> o' .: "data"
+    x <- r .: "signature"
     case fmap Signature (Base64.decode (Text.encodeUtf8 x)) of
       Right signature -> return Result { data_, signature }
       _ -> empty
   parseJSON _ = empty
-
-get :: Aeson.FromJSON a => Text -> Aeson.Object -> Aeson.Parser a
-get = flip (Aeson..:)
-
 
 newtype Signature = Signature Strict.ByteString
     deriving (Show, Eq)
