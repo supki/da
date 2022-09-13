@@ -50,7 +50,7 @@ getConfig = do
     <- Env.parse
          (Env.header usageHeader . Env.footer ("You can get the key at <" <> apiKeyUrl <> ">"))
          (Env.var Env.str
-           "RANDOMORG_API_KEY"
+           "RANDOMORG_APIKEY"
            (Env.help "random.org Beta API key"))
   (n, length)
     <- Opt.customExecParser
