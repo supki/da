@@ -1,0 +1,53 @@
+name:                dazu
+version:             1.0.0
+synopsis:            Generate verifiably random passwords
+description:         See README.markdown
+license:             BSD2
+author:              Matvey Aksenov
+maintainer:          matvey.aksenov@gmail.com
+copyright:           2015-2022 Matvey Aksenov
+category:            Network
+extra-source-files:
+  - README.markdown
+
+custom-setup:
+  dependencies:
+    - base
+    - Cabal
+    - directory
+    - filepath
+    - process
+
+dependencies:
+  - base >= 4.7 && < 5
+
+executables:
+  dazu:
+    dependencies:
+      - aeson
+      - base
+      - base64-bytestring
+      - bytestring
+      - cryptonite
+      - envparse
+      - http-client
+      - http-client-tls
+      - optparse-applicative
+      - pem
+      - text
+      - x509
+    source-dirs:
+      src
+    main:
+      Main.hs
+    other-modules:
+      Config
+      Meta_dazu
+      Result
+      Sign
+      TH
+    ghc-options:
+      - -Wall
+      - -Werror
+      - -threaded
+      - -with-rtsopts=-N

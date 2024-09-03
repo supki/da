@@ -1,25 +1,24 @@
 {-# LANGUAGE ExtendedDefaultRules #-}
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# OPTIONS_GHC -fno-warn-type-defaults #-}
+{-# LANGUAGE StrictData #-}
 module Config
   ( Config
   , getConfig
   ) where
 
-import qualified Data.Aeson as Aeson
-import           Data.Aeson ((.=))
-import           Data.Int (Int64)
-import           Data.Text (Text)
-import qualified Env
-import qualified Options.Applicative as Opt
-import           Prelude hiding (length)
+import Data.Aeson qualified as Aeson
+import Data.Aeson ((.=))
+import Data.Int (Int64)
+import Data.Text (Text)
+import Env qualified
+import Options.Applicative qualified as Opt
+import Prelude hiding (length)
 
-import qualified Meta_dazu as Meta
+import Meta_dazu qualified as Meta
 
-
--- This helps us avoid type annotations in the ToJSON instance.
-default (Integer, Double, Text)
 
 data Config = Config
  { apiKey  :: Text
@@ -28,21 +27,22 @@ data Config = Config
  } deriving (Show, Eq)
 
 instance Aeson.ToJSON Config where
-  toJSON Config { apiKey, n, length } = Aeson.object
-    [ "jsonrpc" .= "2.0"
-    , "method" .= "generateSignedStrings"
-    , "params" .= Aeson.object
-      [ "apiKey" .= apiKey
-      , "n" .= n
-      , "length" .= length
-      , "characters" .=
-          "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
-          \abcdefghijklmnopqrstuvwxyz\
-          \0123456789\
-          \!@#$%^&*()-_=+"
+  toJSON config =
+    Aeson.object
+      [ "jsonrpc" .= ("2.0" :: Text)
+      , "method" .= ("generateSignedStrings" :: Text)
+      , "params" .= Aeson.object
+        [ "apiKey" .= config.apiKey
+        , "n" .= config.n
+        , "length" .= config.length
+        , "characters" .=
+           ("ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+            \abcdefghijklmnopqrstuvwxyz\
+            \0123456789\
+            \!@#$%^&*()-_=+" :: Text)
+        ]
+      , "id" .= (0 :: Int64)
       ]
-    , "id" .= 0
-    ]
 
 getConfig :: IO Config
 getConfig = do
@@ -57,9 +57,9 @@ getConfig = do
          (Opt.prefs Opt.showHelpOnError)
          (Opt.info (Opt.helper <*> opts)
                    (Opt.fullDesc <> Opt.header usageHeader))
-  return Config { apiKey, n, length }
+  return Config {apiKey, n, length}
  where
-  apiKeyUrl = "https://api.random.org/api-keys/beta"
+  apiKeyUrl = "https://api.random.org/dashboard"
 
   opts = (,)
     <$> Opt.option Opt.auto

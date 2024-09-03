@@ -3,7 +3,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 module TH
-  ( key
+  ( randomOrgPubKey
   ) where
 
 import Crypto.PubKey.RSA (PublicKey(PublicKey, public_size, public_n, public_e))
@@ -11,8 +11,8 @@ import Data.PEM (PEM(PEM, pemContent), pemParseBS)
 import Data.X509 (PubKey(PubKeyRSA), certPubKey, getCertificate, decodeSignedCertificate)
 
 
-key :: PublicKey
-key = $(
+randomOrgPubKey :: PublicKey
+randomOrgPubKey = $(
   either error id $ do
     let raw =
           "-----BEGIN CERTIFICATE-----\n\

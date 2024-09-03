@@ -1,4 +1,5 @@
-resolver: lts-19.23
+resolver: lts-22.27
 packages:
   - '.'
 allow-newer: true
+notify-if-nix-on-path: false

@@ -1,40 +1,41 @@
-name:                dazu
-version:             0.1.0
-synopsis:            Generate verifiably random passwords
-description:
-  See README.markdown
-homepage:            https://budueba.com/dazu
-license:             BSD2
-license-file:        LICENSE
-author:              Matvey Aksenov
-maintainer:          matvey.aksenov@gmail.com
-copyright:           2015-2022 Matvey Aksenov
-category:            Network
-build-type:          Custom
-cabal-version:       >= 1.10
-extra-source-files:
-  README.markdown
+cabal-version: 1.24
 
-source-repository head
-  type:     git
-  location: https://github.com/supki/da.git
+-- This file has been generated from package.yaml by hpack version 0.36.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           dazu
+version:        1.0.0
+synopsis:       Generate verifiably random passwords
+description:    See README.markdown
+category:       Network
+author:         Matvey Aksenov
+maintainer:     matvey.aksenov@gmail.com
+copyright:      2015-2022 Matvey Aksenov
+license:        BSD2
+license-file:   LICENSE
+build-type:     Custom
+extra-source-files:
+    README.markdown
 
 custom-setup
   setup-depends:
-      base
-      >= 4.8 && < 5
-    , Cabal
+      Cabal
+    , base
     , directory
     , filepath
     , process
 
 executable dazu
-  default-language:
-    Haskell2010
+  main-is: Main.hs
+  other-modules:
+      Config Meta_dazu Result Sign TH
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Werror -threaded -with-rtsopts=-N
   build-depends:
       aeson
     , base
-      >= 4.8 && < 5
     , base64-bytestring
     , bytestring
     , cryptonite
@@ -45,14 +46,4 @@ executable dazu
     , pem
     , text
     , x509
-  hs-source-dirs:
-    src
-  main-is:
-    Main.hs
-  other-modules:
-    Config
-    TH
-    Meta_dazu
-  ghc-options:
-    -Wall
-    -Werror
+  default-language: Haskell2010
